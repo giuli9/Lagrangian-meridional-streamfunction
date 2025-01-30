@@ -432,7 +432,7 @@ if __name__ == "__main__":
             ipb[k,j]=1.
                     
     tmask2,j_inisec=section(exp,var)
-    mp,mpold=active_points(var,tmask2)
-    psi,ipsi,iref=compute_psi_yz(var,mp,mpold,tmask2)
+    mp,mpold=active_points(var,tmask2,ipb)
+    psi,ipsi,iref=compute_psi_yz(var,mp,mpold,tmask2,ipb)
 
     
