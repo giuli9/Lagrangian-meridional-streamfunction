@@ -55,36 +55,4 @@ if __name__ == "__main__":
     #cbar.ax.set_yticklabels([f"{vmin:.3f}", f"{vmax:.3f}"])
     ax.plot([yt_reg[1],yt_reg[1]],[-zt_reg[0],-zt_reg[71]])
 
-
-"""
-    levels=np.linspace(vmin,vmax,15)
-    norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0., vmax=vmax)
-    plot=ax.contourf(y,z,psi,levels=levels,cmap="turbo")#,vmin=vmin,vmax=vmax,norm=norm) 
-    #ax.pcolormesh(y,z,tmask2,cmap="Greys") 
-    ax.plot([yt_reg[1],yt_reg[1]],[-zt_reg[0],-zt_reg[71]])
-    cbar = fig.colorbar(plot, ax=ax) 
-    cbar.set_label("Transport (Sv)")
-    cbar.set_ticks([vmin, vmax])  
-    cbar.ax.set_yticklabels([f"{vmin:.3f}", f"{vmax:.3f}"])
-    ticks=[0,-500,-1000,-1500,-2000,-2500,-3000,-4000,-5000]
-    ax.set_yticks(ticks)
-    z_mask=z.copy()
-    z_mask[np.isnan(psi)]=np.nan
-    zmin=np.nanmin(z_mask)
-    ax.set_ylim([zmin,0])
-    fig.savefig('./Psi.jpg',dpi=500,bbox_inches='tight')
-        
-
-    #ticks_x=[yt_reg[0],41.4]
-    #ax.set_yticks(ticks)
-    #ax.set_xlim(ticks_x)
-    z_mask=z.copy()
-    z_mask[np.isnan(psi)]=np.nan
-    zmin=np.nanmin(z_mask)
-    ax.set_ylim([zmin,0])
-    #fig.savefig('./Psi.jpg',dpi=500,bbox_inches='tight')
-    #cbar.set_ticks([vmin, vmax])  
-    #cbar.ax.set_yticklabels([f"{vmin:.3f}", f"{vmax:.3f}"])
-    ax.plot([yt_reg[1],yt_reg[1]],[-zt_reg[0],-zt_reg[71]])    
-"""
 	
