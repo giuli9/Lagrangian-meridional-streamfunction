@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 23 12:41:05 2025
 
-@author: sauron
-"""
 import numpy as np
 import xarray as xr
 
@@ -43,16 +39,25 @@ class Vars:
         tmask = ds.tmask
 
         # Inizializzazione delle maschere
-        self.tmask_yz = np.zeros([self.kmt_reg, self.jmt_reg])
-        self.pmask_yz = np.ones([self.kmt_reg, self.jmt_reg])  # Valori iniziali a 1
+        self.tmask_yz = np.ones([self.kmt_reg, self.jmt_reg])
+        self.pmask_yz = np.ones([self.kmt_reg, self.jmt_reg])  
         self.wmask_yz = np.zeros([self.kmt_reg, self.jmt_reg])
         self.vmask_yz = np.zeros([self.kmt_reg, self.jmt_reg])
 
         # Calcolo della tmask_yz
-        for k in range(self.kmt_reg):
-            for j in range(self.jmt_reg):
-                if np.any(tmask[k, j, :]): 
-                    self.tmask_yz[k, j] = 1
+        self.tmask_yz[-1,:]=0.
+        for k in range(self.kmt_reg-1):
+            for j in range(self.jmt_reg-1):
+                if ((self.yz_vert[k,j]==0.) and (self.yz_vert[k+1,j]==0.)
+                    (self.yz_mer[k,j]==0.) and (self.yz_mer[k,j+1]==0.)): 
+                    self.tmask_yz[k, j] = 0.
+
+        j1=self.jmt_reg-1
+
+        for k in range(self.kmt_reg-1):
+            if ((self.yz_vert[k,j1]==0.) and (self.yz_vert[k+1,j1]==0.)
+                (self.yz_mer[k,j1]==0.) and (self.yz_mer[k,j1+1]==0.)):
+                    self.tmask_yz[k, j1] = 0.
 
         # Calcolo della pmask_yz
         for k in range(self.kmt_reg):
