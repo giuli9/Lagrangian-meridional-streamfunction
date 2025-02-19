@@ -196,7 +196,7 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
     
     iref=np.zeros([kmt_reg,jmt_reg])
     
-    #Selezioni gli indici che definiscono il punto dal quale parto a integrare la psi
+    #Creo la matrice per i punti attivi collegati
     kref_psi=0
     jref_psi=1
     iref[kref_psi,jref_psi]=1
@@ -274,15 +274,13 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
                         iref[k,j-1]=1.
                         
         
-        totiref=sum(sum(iref)) #Continuo finchè non trovo tutti i punti attivi
+        totiref=sum(sum(iref)) #Continuo finchè non trovo tutti i punti attivi collegati
     
     kp1=56 #41
     jp1=48 #54
-    for k in range(0,kmt_reg):
-        for j in range(0,jmt_reg):
-            if iref[k,j]==1. and mp[k,j]==1. and kp1==0:
-                kp1=k
-                jp1=j
+    if iref[k,j]==0. or mp[k,j]==0.:
+        print("C'è qualcosa che non va con la scelta del punto iniziale")
+        return
                 
     print("L'integrazione inizia agli indici k=", kp1," e y=",jp1)
     print("\n")
@@ -316,20 +314,78 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
                         ipsi[k,j-1]=1.
         
         for k in range(0,kmt_reg-1):
-            for j in range(0,jmt_reg):
+            for j in range(jmt_reg-1,-1,-1):
                 if ipsi[k,j]==1. and ipb[k,j]==0.:
                     if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.:
                         psi[k+1,j]=psi[k,j]-yz_mer[k+1,j]
                         ipsi[k+1,j]=1.
                         
         for k in range(1,kmt_reg):
-            for j in range(0,jmt_reg):
+            for j in range(jmt_reg-1,-1,-1):
                 if ipsi[k,j]==1. and ipb[k,j]==0.:
                     if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
                         psi[k-1,j]=psi[k,j]+yz_mer[k,j]
                         ipsi[k-1,j]=1.
                         
+        for k in range(0,kmt_reg):
+            for j in range(jmt_reg-1,-1,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
+                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
+                        ipsi[k,j+1]=1. 
+                        
+        for k in range(0,kmt_reg):
+            for j in range(jmt_reg,0,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
+                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
+                        ipsi[k,j-1]=1.        
+                        
+                        
+        for k in range(kmt_reg-2,-1,-1):
+            for j in range(jmt_reg,-1,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
+                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
+                        ipsi[k+1,j]=1.
+                        
+        for k in range(kmt_reg-1,0,-1):
+            for j in range(jmt_reg-1,-1,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
+                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
+                        ipsi[k-1,j]=1.    
+                        
         for k in range(kmt_reg-1,-1,-1):
+            for j in range(jmt_reg-2,-1,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
+                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
+                        ipsi[k,j+1]=1. 
+                        
+        for k in range(kmt_reg-1,-1,-1):
+            for j in range(jmt_reg-1,0,-1):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
+                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
+                        ipsi[k,j-1]=1.
+                        
+                        
+        for k in range(kmt_reg-2,-1,-1):
+            for j in range(0,jmt_reg):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
+                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
+                        ipsi[k+1,j]=1.
+                        
+        for k in range(kmt_reg-1,0,-1):
+            for j in range(0,jmt_reg):
+                if ipsi[k,j]==1. and ipb[k,j]==0.:
+                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
+                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
+                        ipsi[k-1,j]=1.    
+                        
+        for k in range(kmt_reg,-1,-1):
             for j in range(0,jmt_reg-1):
                 if ipsi[k,j]==1. and ipb[k,j]==0.:
                     if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
@@ -341,81 +397,7 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
                 if ipsi[k,j]==1. and ipb[k,j]==0.:
                     if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
                         psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.        
-                        
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(0,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
-                        ipsi[k+1,j]=1.
-                        
-        for k in range(kmt_reg-1,0,-1):
-            for j in range(0,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1.    
-                        
-        for k in range(kmt_reg-1,-1,-1):
-            for j in range(jmt_reg-2,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(kmt_reg-1,-1,-1):
-            for j in range(jmt_reg-1,0,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.
-                        
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
-                        ipsi[k+1,j]=1.
-                        
-        for k in range(kmt_reg-1,0,-1):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1.    
-                        
-        for k in range(0,kmt_reg):
-            for j in range(jmt_reg-2,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(0,kmt_reg):
-            for j in range(jmt_reg-1,0,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.
-                
-        for k in range(0,kmt_reg-1):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j] == 1. and ipb[k,j] == 0.:
-                    if ipsi[k+1,j] == 0 and mp[k+1,j] == 1 and vmask_yz[k+1,j] == 1:
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j]
-                        ipsi[k+1,j]=1
-                
-        for k in range(1,kmt_reg):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j] == 1. and ipb[k,j] == 0:
-                    if ipsi[k-1,j] == 0. and mp[k-1,j] == 1. and vmask_yz[k,j] == 1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1
-                        
-                        
+                        ipsi[k,j-1]=1               
         totipsi=sum(sum(ipsi))
         
     psi=psi/1.e6; psi[psi==-1.e6]=np.nan; psi=psi*pmask_yz
