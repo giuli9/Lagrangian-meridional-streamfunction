@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import compute_psi_yz as comp
 import vars_yz 
+from matplotlib import cm
+import matplotlib.colors as mcolors
 
 if __name__ == "__main__":
 
@@ -37,11 +39,15 @@ if __name__ == "__main__":
     yt_reg=var.yt_reg
     zt_reg=var.zt_reg
     y,z=np.meshgrid(yp_reg,-zp_reg)
-    fig, ax = plt.subplots(figsize=(15,5))
+    fig, ax = plt.subplots(figsize=(13,5))
     vmin = np.nanmin(psi)
     vmax = np.nanmax(psi) 
-    levels=np.linspace(-1.05,0.15,17)
-    plot=ax.contourf(y,z,psi,cmap="turbo",vmin=vmin,vmax=vmax)
+    cmap = cm.coolwarm
+    new_colors = cmap(np.linspace(0, 1, 256))
+    new_colors[0] = [0.85, 0.9, 0.95, 1]
+    new_cmap=mcolors.LinearSegmentedColormap.from_list('modified_cmap', new_colors)
+    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=0.0, vmax=vmax)
+    plot=ax.contourf(y,z,psi,cmap=new_cmap,norm=norm)
     cbar = plt.colorbar(plot, ax=ax)
     cbar.set_label("Transport (Sv)")
     ticks=[0,-500,-1000,-1500,-2000,-2500,-3000,-4000,-5000]
@@ -50,9 +56,11 @@ if __name__ == "__main__":
     z_mask[np.isnan(psi)]=np.nan
     zmin=np.nanmin(z_mask)
     ax.set_ylim([zmin,0])
-    #fig.savefig('./Psi.jpg',dpi=500,bbox_inches='tight')
-    #cbar.set_ticks([vmin, vmax])  
-    #cbar.ax.set_yticklabels([f"{vmin:.3f}", f"{vmax:.3f}"])
     ax.plot([yt_reg[1],yt_reg[1]],[-zt_reg[0],-zt_reg[71]])
+    ax.set_title("Lagrangian meridional streamfunction")
+    ax.set_xlabel("Latitude (\u00b0N)")
+    ax.set_ylabel("Depth (m)")
+    fig.savefig(exp+'/Psi.jpg',dpi=600,bbox_inches='tight')
+
 
 	
