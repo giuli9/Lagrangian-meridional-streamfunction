@@ -56,7 +56,7 @@ if __name__ == "__main__":
     z_mask[np.isnan(psi)]=np.nan
     zmin=np.nanmin(z_mask)
     ax.set_ylim([zmin,0])
-    ax.plot([yt_reg[1],yt_reg[1]],[-zt_reg[0],-zt_reg[71]])
+    ax.plot([yt_reg[j_inisec[0]],yt_reg[j_inisec[1]]],[-zt_reg[0],-zt_reg[71]])
     ax.set_title("Lagrangian meridional streamfunction")
     ax.set_xlabel("Latitude (\u00b0N)")
     ax.set_ylabel("Depth (m)")
