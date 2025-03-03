@@ -3,6 +3,7 @@
 
 import numpy as np
 import vars_yz 
+from collections import deque
 
 def section(exp, var):
 #     Questa funzione definisce tmask2 come tmask_reg ma con 0 dove sono le sezioni
@@ -194,91 +195,9 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
     psi=np.zeros([kmt_reg,jmt_reg])-1.e12
     ipsi=np.zeros([kmt_reg,jmt_reg])
     
-    iref=np.zeros([kmt_reg,jmt_reg])
-    
-    #Creo la matrice per i punti attivi collegati
-    kref_psi=0
-    jref_psi=1
-    iref[kref_psi,jref_psi]=1
-    
-    irefold=0
-    totiref=1
-    
-    while totiref != irefold: 
-        
-        print("Punti attivi: ",irefold," per un totale di ",totiref)
-        irefold=totiref
-        
-        for k in range(0,kmt_reg-1):
-            for j in range(0,jmt_reg-1):
-                if iref[k,j]==1.:
-                    if iref[k+1,j]==0. and tmask2[k+1,j]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k+1,j]=1. 
-                    if iref[k,j+1]==0. and tmask2[k,j+1]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k,j+1]=1.
-                        
-        for k in range(1,kmt_reg-1):
-            for j in range(1,jmt_reg-1):
-                if iref[k,j]==1.:
-                    if iref[k-1,j]==0. and tmask2[k,j]==1. and tmask2[k,j+1]==1.:
-                        iref[k-1,j]=1. 
-                    if iref[k,j-1]==0. and tmask2[k,j]==1. and tmask2[k+1,j]==1.:
-                        iref[k,j-1]=1.
-                        
-        for k in range(0,kmt_reg-1):
-            for j in range(jmt_reg-2,-1,-1):
-                if iref[k,j]==1.:
-                    if iref[k+1,j]==0. and tmask2[k+1,j]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k+1,j]=1. 
-                    if iref[k,j+1]==0. and tmask2[k,j+1]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k,j+1]=1.
-                        
-        for k in range(1,kmt_reg-1):
-            for j in range(jmt_reg-2,0,-1):
-                if iref[k,j]==1.:
-                    if iref[k-1,j]==0. and tmask2[k,j]==1. and tmask2[k,j+1]==1.:
-                        iref[k-1,j]=1. 
-                    if iref[k,j-1]==0. and tmask2[k,j]==1. and tmask2[k+1,j]==1.:
-                        iref[k,j-1]=1.
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(0,jmt_reg-1):
-                if iref[k,j]==1.:
-                    if iref[k+1,j]==0. and tmask2[k+1,j]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k+1,j]=1. 
-                    if iref[k,j+1]==0. and tmask2[k,j+1]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k,j+1]=1.
-                        
-        for k in range(kmt_reg-2,0,-1):
-            for j in range(1,jmt_reg-1):
-                if iref[k,j]==1.:
-                    if iref[k-1,j]==0. and tmask2[k,j]==1. and tmask2[k,j+1]==1.:
-                        iref[k-1,j]=1. 
-                    if iref[k,j-1]==0. and tmask2[k,j]==1. and tmask2[k+1,j]==1.:
-                        iref[k,j-1]=1.
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(jmt_reg-2,-1,-1):
-                if iref[k,j]==1.:
-                    if iref[k+1,j]==0. and tmask2[k+1,j]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k+1,j]=1. 
-                    if iref[k,j+1]==0. and tmask2[k,j+1]==1. and tmask2[k+1,j+1]==1.:
-                        iref[k,j+1]=1.
-                        
-        for k in range(kmt_reg-2,0,-1):
-            for j in range(jmt_reg-2,0,-1):
-                if iref[k,j]==1.:
-                    if iref[k-1,j]==0. and tmask2[k,j]==1. and tmask2[k,j+1]==1.:
-                        iref[k-1,j]=1. 
-                    if iref[k,j-1]==0. and tmask2[k,j]==1. and tmask2[k+1,j]==1.:
-                        iref[k,j-1]=1.
-                        
-        
-        totiref=sum(sum(iref)) #Continuo finchè non trovo tutti i punti attivi collegati
-    
     kp1=56 #41
     jp1=48 #54
-    if iref[k,j]==0. or mp[k,j]==0.:
+    if mp[kp1,jp1]==0.:
         print("C'è qualcosa che non va con la scelta del punto iniziale")
         return
                 
@@ -293,117 +212,41 @@ def compute_psi_yz(var,mp, mpold, tmask2, ipb):
 
     psi[kp1,jp1]=0.
     ipsi[kp1,jp1]=1.
-    totipsi=1
-    
-    while totipsi<mpold:
-        print("Totipsi è ", totipsi,"\n")
-        print("Mpold è ", mpold, "\n")
-        
-        for k in range(0,kmt_reg):
-            for j in range(0,jmt_reg-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(0,kmt_reg):
-            for j in range(1,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.
-        
-        for k in range(0,kmt_reg-1):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.:
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j]
-                        ipsi[k+1,j]=1.
-                        
-        for k in range(1,kmt_reg):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1.
-                        
-        for k in range(0,kmt_reg):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(0,kmt_reg):
-            for j in range(jmt_reg,0,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.        
-                        
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(jmt_reg,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
-                        ipsi[k+1,j]=1.
-                        
-        for k in range(kmt_reg-1,0,-1):
-            for j in range(jmt_reg-1,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1.    
-                        
-        for k in range(kmt_reg-1,-1,-1):
-            for j in range(jmt_reg-2,-1,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(kmt_reg-1,-1,-1):
-            for j in range(jmt_reg-1,0,-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1.
-                        
-                        
-        for k in range(kmt_reg-2,-1,-1):
-            for j in range(0,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k+1,j]==0. and mp[k+1,j]==1. and vmask_yz[k+1,j]==1.: 
-                        psi[k+1,j]=psi[k,j]-yz_mer[k+1,j] 
-                        ipsi[k+1,j]=1.
-                        
-        for k in range(kmt_reg-1,0,-1):
-            for j in range(0,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k-1,j]==0. and mp[k-1,j]==1. and vmask_yz[k,j]==1.:
-                        psi[k-1,j]=psi[k,j]+yz_mer[k,j]
-                        ipsi[k-1,j]=1.    
-                        
-        for k in range(kmt_reg,-1,-1):
-            for j in range(0,jmt_reg-1):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j+1]==0 and mp[k,j+1]==1. and wmask_yz[k,j+1]==1.:
-                        psi[k,j+1]=psi[k,j]+yz_vert[k,j+1]
-                        ipsi[k,j+1]=1. 
-                        
-        for k in range(kmt_reg-1,-1,-1):
-            for j in range(1,jmt_reg):
-                if ipsi[k,j]==1. and ipb[k,j]==0.:
-                    if ipsi[k,j-1]==0. and mp[k,j-1]==1. and wmask_yz[k,j]==1.:
-                        psi[k,j-1]=psi[k,j]-yz_vert[k,j]
-                        ipsi[k,j-1]=1               
-        totipsi=sum(sum(ipsi))
+    queue = deque()
+    queue.append((kp1, jp1))
+
+    while queue:
+        k, j = queue.popleft()
+            # Propagazione orizzontale vicino a destra
+        if j+1 < jmt_reg and ipsi[k, j+1] == 0 and mp[k, j+1] == 1 and ipb[k, j+1] == 0:
+            if wmask_yz[k, j+1] == 1:
+                psi[k, j+1] = psi[k, j] + yz_vert[k, j+1]
+                ipsi[k, j+1] = 1
+                queue.append((k, j+1))
+            # Vicino a sinistra
+        if j-1 >= 0 and ipsi[k, j-1] == 0 and mp[k, j-1] == 1 and ipb[k, j-1] == 0:
+            if wmask_yz[k, j] == 1:  # usando wmask_yz del punto corrente per il lato sinistro
+                psi[k, j-1] = psi[k, j] - yz_vert[k, j]
+                ipsi[k, j-1] = 1
+                queue.append((k, j-1))
+            # Propagazione verticale punto in basso
+        if k+1 < kmt_reg and ipsi[k+1, j] == 0 and mp[k+1, j] == 1 and ipb[k+1, j] == 0:
+            if vmask_yz[k+1, j] == 1:
+                psi[k+1, j] = psi[k, j] + yz_mer[k+1, j]
+                ipsi[k+1, j] = 1
+                queue.append((k+1, j))
+            # Punto in alto (k-1)
+        if k-1 >= 0 and ipsi[k-1, j] == 0 and mp[k-1, j] == 1 and ipb[k-1, j] == 0:
+            if vmask_yz[k, j] == 1:  # usando vmask_yz del punto corrente per l'aggiornamento verso l'alto
+                psi[k-1, j] = psi[k, j] - yz_mer[k, j]
+                ipsi[k-1, j] = 1
+                queue.append((k-1, j))
+
         
     psi=psi/1.e6; psi[psi==-1.e6]=np.nan; psi=psi*pmask_yz
     
     
-    return psi,ipsi, iref
+    return -psi,ipsi, iref
                         
 if __name__ == "__main__":
 
